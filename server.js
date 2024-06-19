@@ -1,11 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');  // Импортируем пакет cors
 const { initializeDatabase } = require('./database');
 const routes = require('./routes');
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
+app.use(cors());  // Используем CORS
 
 initializeDatabase();
 

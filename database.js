@@ -71,6 +71,74 @@ function initializeDatabase() {
             name TEXT NOT NULL,
             short_name TEXT NOT NULL
         )`);
+
+        // Добавление тестовых данных
+        db.run(`INSERT INTO companies (name) VALUES 
+            ('Company A'), ('Company B'), ('Company C'), ('Company D'), ('Company E')`, (err) => {
+            if (err) {
+                console.error('Error inserting into companies:', err.message);
+            } else {
+                console.log('Inserted data into companies');
+            }
+        });
+
+        db.run(`INSERT INTO projects (company_id, name) VALUES 
+            (1, 'Project A1'), (2, 'Project B1'), (3, 'Project C1'), (4, 'Project D1'), (5, 'Project E1')`, (err) => {
+            if (err) {
+                console.error('Error inserting into projects:', err.message);
+            } else {
+                console.log('Inserted data into projects');
+            }
+        });
+
+        db.run(`INSERT INTO contractors (name) VALUES 
+            ('Contractor A'), ('Contractor B'), ('Contractor C'), ('Contractor D'), ('Contractor E')`, (err) => {
+            if (err) {
+                console.error('Error inserting into contractors:', err.message);
+            } else {
+                console.log('Inserted data into contractors');
+            }
+        });
+
+        db.run(`INSERT INTO bank (name) VALUES 
+            ('Bank A'), ('Bank B'), ('Bank C'), ('Bank D'), ('Bank E')`, (err) => {
+            if (err) {
+                console.error('Error inserting into bank:', err.message);
+            } else {
+                console.log('Inserted data into bank');
+            }
+        });
+
+        db.run(`INSERT INTO currency (name, short_name) VALUES 
+            ('Dollar', 'USD'), ('Euro', 'EUR'), ('Ruble', 'RUB'), ('Pound', 'GBP'), ('Yen', 'JPY')`, (err) => {
+            if (err) {
+                console.error('Error inserting into currency:', err.message);
+            } else {
+                console.log('Inserted data into currency');
+            }
+        });
+
+        db.run(`INSERT INTO account (bank_id, currency_id, balance, company_id) VALUES 
+            (1, 1, 1000, 1), (2, 2, 2000, 2), (3, 3, 3000, 3), (4, 4, 4000, 4), (5, 5, 5000, 5)`, (err) => {
+            if (err) {
+                console.error('Error inserting into account:', err.message);
+            } else {
+                console.log('Inserted data into account');
+            }
+        });
+
+        db.run(`INSERT INTO transactions (project_id, account_id, date, summ, contractor_id, notes) VALUES 
+            (1, 1, '2023-01-01', 100, 1, 'Payment A1'), 
+            (2, 2, '2023-01-02', 200, 2, 'Payment B1'), 
+            (3, 3, '2023-01-03', 300, 3, 'Payment C1'), 
+            (4, 4, '2023-01-04', 400, 4, 'Payment D1'), 
+            (5, 5, '2023-01-05', 500, 5, 'Payment E1')`, (err) => {
+            if (err) {
+                console.error('Error inserting into transactions:', err.message);
+            } else {
+                console.log('Inserted data into transactions');
+            }
+        });
     });
 }
 
