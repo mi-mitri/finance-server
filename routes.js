@@ -214,6 +214,41 @@ router.post('/companies', (req, res) => {
     });
 });
 
+// Обновление записи в таблице "companies"
+router.put('/companies/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, accounts } = req.body;
+    db.run(`UPDATE companies SET name = ? WHERE id = ?`, [name, id], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            db.run(`DELETE FROM account WHERE company_id = ?`, [id], function(err) {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                } else {
+                    const accountPromises = accounts.map(account => {
+                        return new Promise((resolve, reject) => {
+                            db.run(`INSERT INTO account (bank_id, currency_id, account_number, balance, company_id) VALUES (?, ?, ?, ?, ?)`, 
+                                [account.bankId, account.currencyId, account.accountNumber, account.balance, id],
+                                function(err) {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        resolve();
+                                    }
+                                }
+                            );
+                        });
+                    });
+                    Promise.all(accountPromises)
+                        .then(() => res.json({ id, name, accounts }))
+                        .catch(err => res.status(500).json({ error: err.message }));
+                }
+            });
+        }
+    });
+});
+
 // Удаление записи из таблицы
 router.delete('/:table/:id', (req, res) => {
     const { table, id } = req.params;
