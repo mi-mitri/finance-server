@@ -188,29 +188,50 @@ router.post('/transactions', (req, res) => {
 // Создание записи в таблице "companies"
 router.post('/companies', (req, res) => {
     const { name, accounts } = req.body;
+    console.log('Received company data:', req.body); // Логирование данных
+
+    if (!name || !accounts || !Array.isArray(accounts) || accounts.length === 0) {
+        console.error('Invalid data format:', req.body);
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
     db.run(`INSERT INTO companies (name) VALUES (?)`, [name], function(err) {
         if (err) {
-            res.status(500).json({ error: err.message });
-        } else {
-            const companyId = this.lastID;
-            const accountPromises = accounts.map(account => {
-                return new Promise((resolve, reject) => {
-                    db.run(`INSERT INTO account (bank_id, currency_id, account_number, balance, company_id) VALUES (?, ?, ?, ?, ?)`, 
-                        [account.bankId, account.currencyId, account.accountNumber, account.balance, companyId],
-                        function(err) {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve();
-                            }
-                        }
-                    );
-                });
-            });
-            Promise.all(accountPromises)
-                .then(() => res.json({ id: companyId, name, accounts }))
-                .catch(err => res.status(500).json({ error: err.message }));
+            console.error('Error inserting company:', err.message);
+            return res.status(500).json({ error: err.message });
         }
+
+        const companyId = this.lastID;
+        console.log('Company created with ID:', companyId); // Логирование ID компании
+
+        const accountPromises = accounts.map(account => {
+            return new Promise((resolve, reject) => {
+                if (!account.bankId || !account.currencyId || !account.accountNumber || !account.balance) {
+                    console.error('Incomplete account data:', account);
+                    return reject(new Error('Incomplete account data'));
+                }
+
+                db.run(`INSERT INTO account (bank_id, currency_id, account_number, balance, company_id) VALUES (?, ?, ?, ?, ?)`, 
+                    [account.bankId, account.currencyId, account.accountNumber, account.balance, companyId],
+                    function(err) {
+                        if (err) {
+                            console.error('Error inserting account:', err.message);
+                            reject(err);
+                        } else {
+                            console.log('Account created for company:', companyId, account); // Логирование данных аккаунта
+                            resolve();
+                        }
+                    }
+                );
+            });
+        });
+
+        Promise.all(accountPromises)
+            .then(() => res.json({ id: companyId, name, accounts }))
+            .catch(err => {
+                console.error('Error in accountPromises:', err.message);
+                res.status(500).json({ error: err.message });
+            });
     });
 });
 
