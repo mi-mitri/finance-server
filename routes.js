@@ -239,13 +239,11 @@ router.post('/companies', (req, res) => {
 router.put('/companies/:id', (req, res) => {
     const { id } = req.params;
     const { name, accounts } = req.body;
-
-    console.log(`Updating company with ID: ${id}`);
-    db.run(`UPDATE companies SET name = ? WHERE id = ?`, [name, id], function(err) {
+    db.run(`UPDATE companies SET name = ? WHERE id = ?`, [name, id], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
-            db.run(`DELETE FROM account WHERE company_id = ?`, [id], function(err) {
+            db.run(`DELETE FROM account WHERE company_id = ?`, [id], function (err) {
                 if (err) {
                     res.status(500).json({ error: err.message });
                 } else {
@@ -253,11 +251,10 @@ router.put('/companies/:id', (req, res) => {
                         return new Promise((resolve, reject) => {
                             db.run(`INSERT INTO account (bank_id, currency_id, account_number, balance, company_id) VALUES (?, ?, ?, ?, ?)`, 
                                 [account.bankId, account.currencyId, account.accountNumber, account.balance, id],
-                                function(err) {
+                                function (err) {
                                     if (err) {
                                         reject(err);
                                     } else {
-                                        console.log(`Account created for company: ${id}`, account);
                                         resolve();
                                     }
                                 }
@@ -272,7 +269,6 @@ router.put('/companies/:id', (req, res) => {
         }
     });
 });
-
 
 
 // Получение данных компании и связанных счетов
