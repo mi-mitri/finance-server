@@ -95,6 +95,43 @@ router.get('/projects', (req, res) => {
     });
 });
 
+// Create new project
+router.post('/projects', (req, res) => {
+    const { name, description, companyId } = req.body;
+    db.run(`INSERT INTO projects (name, description, company_id) VALUES (?, ?, ?)`, [name, description, companyId], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json({ id: this.lastID, name, description, companyId });
+        }
+    });
+});
+
+// Update existing project
+router.put('/projects/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, description, companyId } = req.body;
+    db.run(`UPDATE projects SET name = ?, description = ?, company_id = ? WHERE id = ?`, [name, description, companyId, id], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json({ id, name, description, companyId });
+        }
+    });
+});
+
+// Get a single project by ID
+router.get('/projects/:id', (req, res) => {
+    const { id } = req.params;
+    db.get(`SELECT * FROM projects WHERE id = ?`, [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json(row);
+        }
+    });
+});
+
 // Получение всех транзакций
 router.get('/transactions', (req, res) => {
     db.all(`SELECT * FROM transactions`, (err, rows) => {
