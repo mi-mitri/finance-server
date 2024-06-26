@@ -106,14 +106,26 @@ router.get('/transactions', (req, res) => {
     });
 });
 
-// Получение всех подрядчиков
+// Получение всех записей из таблицы "contractors"
 router.get('/contractors', (req, res) => {
-    db.all(`SELECT * FROM contractors`, (err, rows) => {
+    db.all('SELECT * FROM contractors', (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
-        } else {
-            res.json(rows);
+            return;
         }
+        res.json(rows);
+    });
+});
+
+// Получение одной записи из таблицы "contractors"
+router.get('/contractors/:id', (req, res) => {
+    const { id } = req.params;
+    db.get('SELECT * FROM contractors WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(row);
     });
 });
 
@@ -148,14 +160,51 @@ router.delete('/delete-all', (req, res) => {
         .catch(err => res.status(500).json({ error: err.message }));
 });
 
-// Создание записи в таблице "contractors"
+// Добавление новой записи в таблицу "contractors"
 router.post('/contractors', (req, res) => {
-    const { name } = req.body;
-    db.run(`INSERT INTO contractors (name) VALUES (?)`, [name], function(err) {
+    const { name, email, phone } = req.body;
+    db.run('INSERT INTO contractors (name, email, phone) VALUES (?, ?, ?)', [name, email, phone], function (err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ id: this.lastID, name, email, phone });
+    });
+});
+
+// Обновление записи в таблице "contractors"
+router.put('/contractors/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, email, phone } = req.body;
+    db.run('UPDATE contractors SET name = ?, email = ?, phone = ? WHERE id = ?', [name, email, phone, id], function (err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ id, name, email, phone });
+    });
+});
+
+// Удаление записи из таблицы "contractors"
+router.delete('/contractors/:id', (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM contractors WHERE id = ?', [id], function (err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ deletedId: id });
+    });
+});
+
+// Get a single contractor by ID
+router.get('/contractors/:id', (req, res) => {
+    const { id } = req.params;
+    db.get(`SELECT * FROM contractors WHERE id = ?`, [id], (err, row) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
-            res.json({ id: this.lastID, name });
+            res.json(row);
         }
     });
 });
