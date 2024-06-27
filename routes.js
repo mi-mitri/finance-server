@@ -143,6 +143,26 @@ router.get('/transactions', (req, res) => {
     });
 });
 
+// Обработка транзакций
+router.post('/transactions', (req, res) => {
+    const { projectId, accountId, date, summ, contractorId, notes } = req.body;
+    db.run(`INSERT INTO transactions (project_id, account_id, date, summ, contractor_id, notes) VALUES (?, ?, ?, ?, ?, ?)`, 
+        [projectId, accountId, date, summ, contractorId, notes], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            db.run(`UPDATE account SET balance = balance + ? WHERE id = ?`, [summ, accountId], function(err) {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                } else {
+                    res.json({ id: this.lastID, projectId, accountId, date, summ, contractorId, notes });
+                }
+            });
+        }
+    });
+});
+
+
 // Получение всех записей из таблицы "contractors"
 router.get('/contractors', (req, res) => {
     db.all('SELECT * FROM contractors', (err, rows) => {
@@ -254,19 +274,6 @@ router.post('/currencies', (req, res) => {
             res.status(500).json({ error: err.message });
         } else {
             res.json({ id: this.lastID, name, short_name });
-        }
-    });
-});
-
-// Создание записи в таблице "transactions"
-router.post('/transactions', (req, res) => {
-    const { description, amount, companyId, accountId } = req.body;
-    db.run(`INSERT INTO transactions (description, amount, company_id, account_id) VALUES (?, ?, ?, ?)`, 
-        [description, amount, companyId, accountId], function(err) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-        } else {
-            res.json({ id: this.lastID, description, amount, companyId, accountId });
         }
     });
 });
